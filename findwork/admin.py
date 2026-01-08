@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
-
 from .models import *
+
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -59,7 +59,7 @@ class UserAdmin(admin.ModelAdmin):
 class UngVienAdmin(admin.ModelAdmin):
     list_display = ('ho_ten', 'user_email', 'ngay_sinh', 'trinh_do', 'kinh_nghiem', 'xem_cv')
     list_filter = ['trinh_do', 'gioi_tinh', 'kinh_nghiem']
-    search_fields = ['ho_ten', 'user__email', 'user__so__dien__thoai']
+    search_fields = ['ho_ten', 'user__email', 'user__so_dien_thoai']
 
     fieldsets = (
     ('Thông tin cá nhân', {
@@ -128,12 +128,17 @@ class NhaTuyenDungAdmin(admin.ModelAdmin):
             colors.get(obj.trang_thai, 'gray'),
             obj.get_trang_thai_display()
         )
-        trang_thai_mau.short_description = "Trạng thái"
+
+    trang_thai_mau.short_description = "Trạng thái"
 
     def xem_chi_tiet(self, obj):
-        return format_html('<a href="{}" class="button">Xem tin tuyển dụng</a>',
-                           reverse('admin:app_tintuyendung_changelist') + f'?nha_tuyen_dung__id__exact={obj.id}')
-    xem_chi_tiet.short_description = "Hành động"
+        url = (
+                reverse('admin:findwork_tintuyendung_changelist')
+                + f'?nha_tuyen_dung__id__exact={obj.id}'
+        )
+        return format_html('<a href="{}">Xem tin</a>', url)
+
+    xem_chi_tiet.short_description = "Tin tuyển dụng"
 
     actions = ['duyet_nha_tuyen_dung', 'tu_choi_nha_tuyen_dung']
     def duyet_nha_tuyen_dung(self, request, queryset):
@@ -213,8 +218,11 @@ class TinTuyenDungAdmin(admin.ModelAdmin):
 
     def so_ho_so(self, obj):
         count = obj.ho_so.count()
-        url = reverse('admin:app_hosoungtuyen_changelist') + f'?tin_tuyen_dung__id__exact={obj.id}'
-        return format_html('<a href="{}" style="font-weight: bold;">{} hồ sơ</a>', url, count)
+        url = (
+                reverse('admin:findwork_hosoungtuyen_changelist')
+                + f'?tin_tuyen_dung__id__exact={obj.id}'
+        )
+        return format_html('<a href="{}"><b>{} hồ sơ</b></a>', url, count)
 
     so_ho_so.short_description = "Hồ sơ ứng tuyển"
 
@@ -278,7 +286,8 @@ class HoSoUngTuyenAdmin(admin.ModelAdmin):
             'tu_choi': 'darkred'
         }
         return format_html(
-            '<span style="padding: 3px 8px; background-color: {}; color: white; border-radius: 3px; font-size: 11px;">{}</span>',
+            '<span style="padding: 3px 8px; background-color: {}; color: white; '
+            'border-radius: 3px; font-size: 11px;">{}</span>',
             colors.get(obj.trang_thai, 'gray'),
             obj.get_trang_thai_display()
         )
@@ -343,7 +352,7 @@ class NganhNgheAdmin(admin.ModelAdmin):
     def so_luong_tin(self, obj):
         count = obj.tin_tuyen_dung.count()
         return format_html('<span style="font-weight: bold; color: blue;">{}</span>', count)
-    so_luong_tin.ShortDescription = "Số tin tuyển dụng"
+    so_luong_tin.short_description = "Số tin tuyển dụng"
 
     def mo_ta(self, obj):
         return obj.mo_ta[:50] + "..." if len(obj.mo_ta) > 50 else obj.mo_ta

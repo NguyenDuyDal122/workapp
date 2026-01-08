@@ -1,5 +1,4 @@
-
-
+from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -14,7 +13,7 @@ class User(AbstractUser):
     ]
     vai_tro = models.CharField(max_length=20, choices=VAI_TRO_CHOICES, default='ung_vien')
     so_dien_thoai = models.CharField(max_length=20, blank=True, null=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     dia_chi = RichTextField(blank=True, null=True)
     class Meta:
         verbose_name = "Người dùng"

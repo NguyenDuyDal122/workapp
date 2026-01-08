@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure-b68b2yxif+x30h3o&*myzgj79#ut1+3%i0d##ic!jno2u5qo-j
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -44,10 +42,17 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'rest_framework',
     'drf_yasg',
+    'django.contrib.humanize',
+    'oauth2_provider',
 ]
 
 REST_FRAMEWORK = {
-
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
 }
 
 MIDDLEWARE = [
@@ -61,6 +66,7 @@ MIDDLEWARE = [
 ]
 
 import pymysql
+
 pymysql.install_as_MySQLdb()
 
 ROOT_URLCONF = 'find_work_app.urls'
@@ -84,7 +90,6 @@ CKEDITOR_UPLOAD_PATH = "ckeditor/images/"
 
 WSGI_APPLICATION = 'find_work_app.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -99,7 +104,6 @@ DATABASES = {
 }
 MEDIA_ROOT = '%s/findwork/static/' % BASE_DIR
 AUTH_USER_MODEL = 'findwork.User'
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -119,7 +123,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -130,7 +133,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -164,3 +166,18 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+from datetime import timedelta
+
+OAUTH2_PROVIDER = {
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 3600,
+    'REFRESH_TOKEN_EXPIRE_SECONDS': 86400,
+    'ROTATE_REFRESH_TOKEN': True,
+    'SCOPES': {
+        'read': 'Read scope',
+        'write': 'Write scope',
+        'admin': 'Admin scope',
+    },
+    'PKCE_REQUIRED': True,   # 🔥 CỰC KỲ QUAN TRỌNG
+}
+

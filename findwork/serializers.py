@@ -3,6 +3,8 @@ from .models import *
 
 # ================= USER =================
 class UserSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False)
+
     class Meta:
         model = User
         exclude = ('password',)

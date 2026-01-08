@@ -1,0 +1,118 @@
+{% extends "admin/base_site.html" %}
+{% load humanize %}
+
+{% block content %}
+<h1>📊 THỐNG KÊ HỆ THỐNG</h1>
+<hr>
+
+<!-- ================= TỔNG QUAN ================= -->
+<h2>🔎 Tổng quan</h2>
+<div class="stat-wrap">
+    <div class="stat">📄 Tin tuyển dụng<br><b>{{ tong_tin }}</b></div>
+    <div class="stat">🏢 Nhà tuyển dụng<br><b>{{ tong_ntd }}</b></div>
+    <div class="stat">👤 Ứng viên<br><b>{{ tong_uv }}</b></div>
+    <div class="stat">📑 Hồ sơ ứng tuyển<br><b>{{ tong_hoso }}</b></div>
+    <div class="stat">💰 Doanh thu<br><b>{{ tong_doanh_thu|intcomma }} VNĐ</b></div>
+</div>
+
+<hr>
+
+<!-- ================= BIỂU ĐỒ ================= -->
+<h2>📈 Tin tuyển dụng theo tháng ({{ now|date:"Y" }})</h2>
+<canvas id="tinTheoThang"></canvas>
+
+<hr>
+
+<h2>🧾 Hồ sơ ứng tuyển theo tháng</h2>
+<canvas id="hosoTheoThang"></canvas>
+
+<hr>
+
+<h2>🏆 Top nhà tuyển dụng</h2>
+<canvas id="topNTD"></canvas>
+
+<hr>
+
+<h2>🔥 Top ngành nghề</h2>
+<canvas id="topNganh"></canvas>
+
+<!-- ================= CHART JS ================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+/* ====== Tin theo tháng ====== */
+const tinLabels = [{% for i in tin_theo_thang %}'Tháng {{ i.ngay_dang__month }}',{% endfor %}];
+const tinData = [{% for i in tin_theo_thang %}{{ i.total }},{% endfor %}];
+
+new Chart(document.getElementById('tinTheoThang'), {
+    type: 'bar',
+    data: {
+        labels: tinLabels,
+        datasets: [{
+            label: 'Số tin tuyển dụng',
+            data: tinData,
+            backgroundColor: '#4CAF50'
+        }]
+    }
+});
+
+/* ====== Hồ sơ theo tháng ====== */
+const hsLabels = [{% for i in ho_so_theo_thang %}'Tháng {{ i.ngay_nop__month }}',{% endfor %}];
+const hsData = [{% for i in ho_so_theo_thang %}{{ i.total }},{% endfor %}];
+
+new Chart(document.getElementById('hosoTheoThang'), {
+    type: 'bar',
+    data: {
+        labels: hsLabels,
+        datasets: [{
+            label: 'Số hồ sơ ứng tuyển',
+            data: hsData,
+            backgroundColor: '#2196F3'
+        }]
+    }
+});
+
+/* ====== Top nhà tuyển dụng ====== */
+new Chart(document.getElementById('topNTD'), {
+    type: 'pie',
+    data: {
+        labels: [{% for i in top_ntd %}'{{ i.nha_tuyen_dung__ten_cong_ty }}',{% endfor %}],
+        datasets: [{
+            data: [{% for i in top_ntd %}{{ i.total }},{% endfor %}],
+        }]
+    }
+});
+
+/* ====== Top ngành nghề ====== */
+new Chart(document.getElementById('topNganh'), {
+    type: 'pie',
+    data: {
+        labels: [{% for i in top_nganh %}'{{ i.nganh_nghe__ten }}',{% endfor %}],
+        datasets: [{
+            data: [{% for i in top_nganh %}{{ i.total }},{% endfor %}],
+        }]
+    }
+});
+</script>
+
+<style>
+.stat-wrap {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.stat {
+    padding: 16px 24px;
+    background: #f5f5f5;
+    border-radius: 10px;
+    font-size: 16px;
+    min-width: 200px;
+    text-align: center;
+}
+canvas {
+    max-width: 800px;
+    margin: 20px 0;
+}
+</style>
+
+{% endblock %}
