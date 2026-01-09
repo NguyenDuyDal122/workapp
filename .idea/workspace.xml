@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="ba56dd8b-6f9c-4d83-b910-9e24594ffba3" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workapp.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/find_work_app/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/find_work_app/asgi.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/find_work_app/settings.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/find_work_app/urls.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/find_work_app/wsgi.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/admin.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/apps.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/migrations/0002_alter_ungvien_options_ungvien_ky_nang.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/migrations/0003_rename_nga_het_han_noi_bat_tintuyendung_ngay_het_han_noi_bat_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/migrations/0004_alter_giaodich_ghi_chu_alter_goidichvu_mo_ta_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/migrations/0005_alter_user_avatar.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/migrations/0006_alter_user_avatar.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/migrations/0007_alter_user_avatar.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/migrations/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/models.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/paginators.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/permissions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/serializers.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/static/css/style.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/templates/thong_ke.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/urls.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/findwork/views.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/manage.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/avatars/10-Mon-An-Vat-Tu-Trung-Cut-Ngon-Lac-Loi.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/avatars/banh-trang-tron-sate.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/avatars/khoai.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/cv_dinh/coca.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/nganhnghe/2026/01/8934588022111-1-1.jpg.webp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/nhatuyendung/2026/01/118472031_2604456169869438_2846920567547794295_n.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/ungvien/2026/01/118472031_2604456169869438_2846920567547794295_n.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="3816D7adGlcjaMQVI9bZfGSZhyC" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-d7ad00fb9fc3-c546a90a8094-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.23726.102" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ba56dd8b-6f9c-4d83-b910-9e24594ffba3" name="Changes" comment="" />
+      <created>1767954609435</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1767954609435</updated>
+    </task>
+    <servers />
+  </component>
+</project>
