@@ -9,29 +9,22 @@ import {
     ActivityIndicator,
     StyleSheet
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-
-const BASE_URL = "https://DuyDal12.pythonanywhere.com";
+import API, { endpoints } from "../../configs/API";
 
 export default function AdminHome() {
     const [nhaTuyenDungList, setNhaTuyenDungList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    // Lấy danh sách nhà tuyển dụng chờ duyệt
     const fetchNhaTuyenDung = async () => {
         setLoading(true);
         try {
-            const token = await AsyncStorage.getItem("access_token");
-            const res = await axios.get(`${BASE_URL}/nhatuyendung/`, {
-                headers: { Authorization: `Bearer ${token}` },
+            const res = await API.get(endpoints.nhaTuyenDung, {
                 params: { trang_thai: "cho_duyet" }
             });
-            console.log("Danh sách NT chờ duyệt:", res.data); // <-- kiểm tra
             setNhaTuyenDungList(res.data);
         } catch (err) {
-            console.log(err.response?.data || err.message);
+            console.log(err.response?.data || err);
             Alert.alert("Lỗi", "Không lấy được danh sách nhà tuyển dụng");
         } finally {
             setLoading(false);
@@ -42,18 +35,19 @@ export default function AdminHome() {
         fetchNhaTuyenDung();
     }, []);
 
-    // Hàm duyệt hoặc từ chối
     const handleDuyet = async (id, trang_thai) => {
         try {
-            const token = await AsyncStorage.getItem("access_token");
-            await axios.patch(
-                `${BASE_URL}/nhatuyendung/${id}/duyet/`,
-                { trang_thai },
-                { headers: { Authorization: `Bearer ${token}` } }
+            await API.patch(
+                endpoints.duyetNhaTuyenDung(id),
+                { trang_thai }
             );
-            Alert.alert("Thành công", `Đã ${trang_thai === 'da_duyet' ? 'duyệt' : 'từ chối'} nhà tuyển dụng`);
-            fetchNhaTuyenDung(); // Load lại danh sách
+            Alert.alert(
+                "Thành công",
+                `Đã ${trang_thai === "da_duyet" ? "duyệt" : "từ chối"} nhà tuyển dụng`
+            );
+            fetchNhaTuyenDung();
         } catch (err) {
+            console.log(err.response?.data || err);
             Alert.alert("Lỗi", "Không thể thực hiện hành động");
         }
     };

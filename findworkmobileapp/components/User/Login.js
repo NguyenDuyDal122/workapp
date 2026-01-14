@@ -27,7 +27,6 @@ export default function Login({ navigation }) {
         setLoading(true);
 
         try {
-            // 🔹 1️⃣ Lấy token
             const form = new URLSearchParams();
             form.append("grant_type", "password");
             form.append("username", username);
@@ -44,12 +43,11 @@ export default function Login({ navigation }) {
             const token = res.data.access_token;
             await AsyncStorage.setItem("access_token", token);
 
-            // 🔹 2️⃣ Lấy thông tin user
             const userRes = await axios.get(`${BASE_URL}/nguoidung/me/`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            console.log("User info:", userRes.data); // debug
+            console.log("User info:", userRes.data);
             const role = userRes.data.vai_tro?.toLowerCase();
 
             if (role === "admin") {

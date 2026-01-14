@@ -5,6 +5,11 @@ from django.utils.html import format_html
 from .models import *
 
 
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import User
+
+
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = (
@@ -35,24 +40,18 @@ class UserAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        # Nếu user mới hoặc đổi password
         if not change or 'password' in form.changed_data:
             obj.set_password(obj.password)
-
-        # Lưu file avatar (trigger upload lên Cloudinary)
-        avatar_file = form.cleaned_data.get('avatar')
-        if avatar_file:
-            obj.avatar = avatar_file  # File object, CloudinaryStorage sẽ upload khi obj.save()
-
-        obj.save()  # <- phải gọi save() sau khi gán file
+        obj.save()
 
     def avatar_preview(self, obj):
         if obj.avatar:
             return format_html(
-                '<img src="{}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;" />',
+                '<img src="{}" width="50" height="50" style="border-radius:50%" />',
                 obj.avatar.url
             )
         return "Chưa có ảnh"
+
 
     avatar_preview.short_description = "Avatar"
 

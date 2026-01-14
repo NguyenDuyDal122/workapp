@@ -28,7 +28,6 @@ export default function Home() {
 
     const navigation = useNavigation();
 
-    // ===== Load user =====
     useEffect(() => {
         const loadUser = async () => {
             try {
@@ -46,11 +45,10 @@ export default function Home() {
         loadUser();
     }, []);
 
-    // ===== Load tin tuyển dụng =====
     const fetchTinTuyenDung = async (q = "") => {
         setLoadingTin(true);
         try {
-            const res = await API.get("/tintuyendung/", {
+            const res = await API.get(endpoints.tintuyendung, {
                 params: { q },
             });
             setTinTuyenDung(res.data.results || []);
@@ -79,38 +77,35 @@ export default function Home() {
         setMenuVisible(false);
         switch (action) {
             case "my_profile":
-                navigation.navigate("HoSoCaNhan"); // hồ sơ của ứng viên
+                navigation.navigate("HoSoCaNhan");
                 break;
             case "history":
-                navigation.navigate("LichSuUngTuyen"); // lịch sử ứng tuyển
+                navigation.navigate("LichSuUngTuyen");
                 break;
             case "compare_jobs":
-                navigation.navigate("SoSanhCongViec"); // so sánh công việc
-                break;
-            case "profile":
-                navigation.navigate("Profile"); // thông tin cá nhân
+                navigation.navigate("SoSanhCongViec");
                 break;
             case "manage_jobs":
-                navigation.navigate("ManageTinTuyenDung"); // quản lý tin tuyển dụng
+                navigation.navigate("QuanLyTin");
                 break;
             case "manage_company":
-                navigation.navigate("ManageCompany"); // quản lý thông tin doanh nghiệp
+                navigation.navigate("QuanLyThongTin");
                 break;
             case "post_job":
-                navigation.navigate("DangTin"); // đăng tin tuyển dụng
+                navigation.navigate("DangTin");
                 break;
             case "my_jobs":
-                navigation.navigate("HoSoUngTuyen"); // hồ sơ ứng viên
+                navigation.navigate("HoSoUngTuyen");
                 break;
             case "statistics":
-                navigation.navigate("ThongKe"); // thống kê
+                navigation.navigate("ThongKeHoSo");
                 break;
             default:
                 break;
         }
     };
 
-    // ===== Render =====
+
     return (
         <View style={{ flex: 1, padding: 16 }}>
             {/* ===== HEADER ===== */}
@@ -196,7 +191,6 @@ export default function Home() {
                                 <Button title="Hồ sơ của tôi" onPress={() => handleMenuItem("my_profile")} />
                                 <Button title="Lịch sử ứng tuyển" onPress={() => handleMenuItem("history")} />
                                 <Button title="So sánh công việc" onPress={() => handleMenuItem("compare_jobs")} />
-                                <Button title="Thông tin cá nhân" onPress={() => handleMenuItem("profile")} />
                                 <Button title="Đăng xuất" onPress={logout} color="red" />
                             </>
                         ) : (

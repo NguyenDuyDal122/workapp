@@ -1,19 +1,22 @@
-from rest_framework import viewsets, permissions, status, mixins, parsers
+from rest_framework import viewsets, permissions, status, mixins, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser   # ✅ BẮT BUỘC
+
+from django.utils import timezone
+from django.db.models import Count, Sum
+from django.shortcuts import render
+from django.contrib.admin.views.decorators import staff_member_required
+
 from .serializers import *
 from .permissions import *
 from findwork import paginators
-from django.utils import timezone
-from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render
-from django.utils import timezone
-from django.db.models import Count, Sum
 
 from .models import (
     User, UngVien, NhaTuyenDung,
-    TinTuyenDung, HoSoUngTuyen, GiaoDich
+    TinTuyenDung, HoSoUngTuyen, GiaoDich,
+    SoSanhCongViec, GoiDichVu      # ✅ THIẾU TRƯỚC ĐÓ
 )
 
 @staff_member_required
@@ -74,36 +77,69 @@ def thong_ke_admin(request):
     })
 
 
-# ================= USER =================
 class UserView(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [parsers.MultiPartParser]
 
     def get_queryset(self):
         if self.request.user.is_staff:
             return User.objects.all()
         return User.objects.filter(id=self.request.user.id)
 
-# ================= ỨNG VIÊN =================
-class UngVienView(viewsets.ReadOnlyModelViewSet):
-    queryset = UngVien.objects.filter(active=True)
+    @action(
+        methods=['post'],
+        detail=False,
+        parser_classes=[MultiPartParser, FormParser]
+    )
+    def upload_avatar(self, request):
+        avatar = request.FILES.get('avatar')
+
+        if not avatar:
+            return Response({"error": "No avatar"}, status=400)
+
+        request.user.avatar = avatar
+        request.user.save()
+        return Response(self.get_serializer(request.user).data)
+
+    @action(methods=['get', 'patch'], detail=False)
+    def me(self, request):
+        serializer = self.get_serializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class RegisterView(mixins.CreateModelMixin,
+                   viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+
+class UngVienView(viewsets.ModelViewSet):
     serializer_class = UngVienSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.is_staff:
-            return UngVien.objects.all()
-        if hasattr(user, 'ung_vien'):
-            return UngVien.objects.filter(user=user)
-        return UngVien.objects.none()
+        return UngVien.objects.filter(user=self.request.user)
 
-# ================= NHÀ TUYỂN DỤNG =================
+    def perform_create(self, serializer):
+        if hasattr(self.request.user, 'ung_vien'):
+            raise serializers.ValidationError(
+                {"detail": "Ứng viên đã có hồ sơ"}
+            )
+
+        serializer.save(user=self.request.user)
+
 class NhaTuyenDungView(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
     viewsets.GenericViewSet
 ):
     queryset = NhaTuyenDung.objects.all()
@@ -121,34 +157,63 @@ class NhaTuyenDungView(
         nt.save()
         return Response({'message': 'Đã duyệt'})
 
-# ================= NGÀNH NGHỀ =================
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        trang_thai = self.request.query_params.get('trang_thai')
+        if trang_thai:
+            qs = qs.filter(trang_thai=trang_thai)
+        return qs
+
+    @action(
+        methods=['post'],
+        detail=True,
+        parser_classes=[MultiPartParser],
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def upload_logo(self, request, pk=None):
+        ntd = self.get_object()
+        logo = request.FILES.get('logo')
+
+        if not logo:
+            return Response({"error": "No logo"}, status=400)
+
+        ntd.logo = logo
+        ntd.save()
+        return Response(self.get_serializer(ntd).data)
+
 class NganhNgheView(viewsets.ReadOnlyModelViewSet):
     queryset = NganhNghe.objects.all()
     serializer_class = NganhNgheSerializer
     permission_classes = [permissions.AllowAny]
 
-# ================= TIN TUYỂN DỤNG =================
 class TinTuyenDungView(viewsets.ModelViewSet):
     serializer_class = TinTuyenDungSerializer
     pagination_class = paginators.TinTuyenPaginators
 
     def get_queryset(self):
-        qs = TinTuyenDung.objects.filter(active=True).select_related(
+        qs = TinTuyenDung.objects.all().select_related(
             'nha_tuyen_dung', 'nganh_nghe'
         )
 
-        q = self.request.query_params.get('q')
-        nganh = self.request.query_params.get('nganh_nghe')
-        dia_diem = self.request.query_params.get('dia_diem')
+        # CHỈ FILTER KHI LIST (GET)
+        if self.action == 'list':
+            qs = qs.filter(trang_thai='dang_tuyen')
 
-        if q:
-            qs = qs.filter(tieu_de__icontains=q)
+            q = self.request.query_params.get('q')
+            nganh = self.request.query_params.get('nganh_nghe')
+            dia_diem = self.request.query_params.get('dia_diem')
 
-        if nganh:
-            qs = qs.filter(nganh_nghe_id=nganh)
+            if q:
+                qs = qs.filter(tieu_de__icontains=q)
 
-        if dia_diem:
-            qs = qs.filter(dia_diem__icontains=dia_diem)
+            if nganh:
+                qs = qs.filter(nganh_nghe__ten__icontains=nganh)
+
+            if dia_diem:
+                qs = qs.filter(dia_diem__icontains=dia_diem)
 
         return qs
 
@@ -158,9 +223,15 @@ class TinTuyenDungView(viewsets.ModelViewSet):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        if not hasattr(self.request.user, 'nha_tuyen_dung'):
+        try:
+            nha_tuyen_dung = self.request.user.nha_tuyen_dung
+        except NhaTuyenDung.DoesNotExist:
             raise PermissionDenied("Bạn không phải nhà tuyển dụng")
-        serializer.save(nha_tuyen_dung=self.request.user.nha_tuyen_dung)
+
+        if nha_tuyen_dung.trang_thai != 'da_duyet':
+            raise PermissionDenied("Tài khoản nhà tuyển dụng chưa được duyệt")
+
+        serializer.save(nha_tuyen_dung=nha_tuyen_dung)
 
     def perform_update(self, serializer):
         instance = self.get_object()
@@ -171,10 +242,11 @@ class TinTuyenDungView(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         if instance.nha_tuyen_dung != self.request.user.nha_tuyen_dung:
             raise PermissionDenied("Bạn không có quyền xoá tin này")
-        instance.active = False
+
+        instance.trang_thai = 'dong'
         instance.save()
 
-# ================= HỒ SƠ ỨNG TUYỂN =================
+
 class HoSoUngTuyenView(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -212,14 +284,19 @@ class HoSoUngTuyenView(
             raise PermissionDenied("Không có quyền đánh giá hồ sơ này")
 
         trang_thai = request.data.get('trang_thai')
-        if trang_thai not in ['cho_duyet', 'dat', 'khong_dat']:
+
+        valid_status = dict(HoSoUngTuyen.TRANG_THAI_CHOICES).keys()
+        if trang_thai not in valid_status:
             return Response({'error': 'Trạng thái không hợp lệ'}, status=400)
 
         hs.trang_thai = trang_thai
         hs.danh_gia = request.data.get('danh_gia')
         hs.save()
 
-        return Response({'message': 'Đã đánh giá'})
+        return Response({
+            'message': 'Đã cập nhật trạng thái',
+            'trang_thai': hs.trang_thai
+        })
 
     def get_queryset(self):
         user = self.request.user
@@ -237,7 +314,37 @@ class HoSoUngTuyenView(
 
         return HoSoUngTuyen.objects.none()
 
-# ================= SO SÁNH =================
+    @action(
+        methods=['get'],
+        detail=False,
+        permission_classes=[IsNhaTuyenDung]
+    )
+    def thong_ke(self, request):
+        ntd = request.user.nha_tuyen_dung
+
+        qs = HoSoUngTuyen.objects.filter(
+            tin_tuyen_dung__nha_tuyen_dung=ntd
+        )
+
+        tong_hoso = qs.count()
+
+        theo_trang_thai = (
+            qs.values('trang_thai')
+            .annotate(total=Count('id'))
+        )
+
+        theo_tin = (
+            qs.values('tin_tuyen_dung__tieu_de')
+            .annotate(total=Count('id'))
+            .order_by('-total')
+        )
+
+        return Response({
+            "tong_hoso": tong_hoso,
+            "theo_trang_thai": theo_trang_thai,
+            "theo_tin": theo_tin
+        })
+
 class SoSanhCongViecView(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -247,12 +354,10 @@ class SoSanhCongViecView(
     serializer_class = SoSanhCongViecSerializer
     permission_classes = [IsUngVien]
 
-# ================= GÓI DỊCH VỤ =================
 class GoiDichVuView(viewsets.ReadOnlyModelViewSet):
     queryset = GoiDichVu.objects.all()
     serializer_class = GoiDichVuSerializer
 
-# ================= GIAO DỊCH =================
 class GiaoDichView(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,

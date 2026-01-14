@@ -10,49 +10,52 @@ import {
     Alert,
 } from "react-native";
 import API, { endpoints } from "../../configs/API";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 
-export default function DangTin() {
+export default function SuaTin() {
     const navigation = useNavigation();
+    const route = useRoute();
+    const { tin } = route.params;
 
     const [loading, setLoading] = useState(false);
     const [nganhNgheList, setNganhNgheList] = useState([]);
-    const [tieuDe, setTieuDe] = useState("");
-    const [nganhNghe, setNganhNghe] = useState("");
-    const [diaDiem, setDiaDiem] = useState("");
-    const [mucLuongTu, setMucLuongTu] = useState("");
-    const [mucLuongDen, setMucLuongDen] = useState("");
-    const [donViLuong, setDonViLuong] = useState("VNĐ");
-    const [moTaCongViec, setMoTaCongViec] = useState("");
-    const [yeuCau, setYeuCau] = useState("");
-    const [daiNgo, setDaiNgo] = useState("");
-    const [hanNopHoSo, setHanNopHoSo] = useState(new Date());
+
+    const [tieuDe, setTieuDe] = useState(tin.tieu_de);
+    const [nganhNghe, setNganhNghe] = useState(tin.nganh_nghe?.id || "");
+    const [diaDiem, setDiaDiem] = useState(tin.dia_diem);
+    const [mucLuongTu, setMucLuongTu] = useState(String(tin.muc_luong_tu));
+    const [mucLuongDen, setMucLuongDen] = useState(String(tin.muc_luong_den));
+    const [donViLuong, setDonViLuong] = useState(tin.don_vi_luong);
+    const [moTaCongViec, setMoTaCongViec] = useState(tin.mo_ta_cong_viec || "");
+    const [yeuCau, setYeuCau] = useState(tin.yeu_cau || "");
+    const [daiNgo, setDaiNgo] = useState(tin.dai_ngo || "");
+    const [soLuong, setSoLuong] = useState(String(tin.so_luong_tuyen));
+    const [hanNopHoSo, setHanNopHoSo] = useState(new Date(tin.han_nop_ho_so));
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [soLuongTuyen, setSoLuongTuyen] = useState("");
 
     useEffect(() => {
-        const fetchNganhNghe = async () => {
+        const loadNganhNghe = async () => {
             try {
                 const res = await API.get(endpoints.nganhnghe);
                 setNganhNgheList(res.data);
             } catch (err) {
-                console.log("Lỗi load ngành nghề:", err.response?.data || err);
+                console.log(err.response?.data || err);
             }
         };
-        fetchNganhNghe();
+        loadNganhNghe();
     }, []);
 
-    const handleSubmit = async () => {
-        if (!tieuDe || !nganhNghe || !diaDiem || !mucLuongTu || !mucLuongDen || !soLuongTuyen) {
-            Alert.alert("Lỗi", "Vui lòng nhập đầy đủ các trường bắt buộc");
+    const handleUpdate = async () => {
+        if (!tieuDe || !nganhNghe || !diaDiem) {
+            Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin bắt buộc");
             return;
         }
 
         setLoading(true);
         try {
-            await API.post(endpoints.tintuyendung, {
+            await API.patch(`${endpoints.tintuyendung}${tin.id}/`, {
                 tieu_de: tieuDe,
                 nganh_nghe_id: Number(nganhNghe),
                 dia_diem: diaDiem,
@@ -62,43 +65,29 @@ export default function DangTin() {
                 mo_ta_cong_viec: moTaCongViec,
                 yeu_cau: yeuCau,
                 dai_ngo: daiNgo,
+                so_luong_tuyen: Number(soLuong),
                 han_nop_ho_so: hanNopHoSo.toISOString().split("T")[0],
-                so_luong_tuyen: Number(soLuongTuyen),
             });
-            Alert.alert("Thành công", "Đăng tin tuyển dụng thành công!");
+
+            Alert.alert("Thành công", "Cập nhật tin tuyển dụng thành công!");
             navigation.goBack();
         } catch (err) {
             console.log("STATUS:", err.response?.status);
-            console.log("HEADERS:", err.response?.headers);
-            console.log("RAW DATA:", err.response?.data);
-
-            Alert.alert(
-                "Lỗi",
-                "Bạn là nhà tuyển dụng chưa được duyệt"
-            );
-        }
-
-        finally {
+            console.log("DATA:", err.response?.data);
+            Alert.alert("Lỗi", "Không thể cập nhật tin");
+        } finally {
             setLoading(false);
         }
     };
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
-            <Text style={styles.label}>Tiêu đề (*)</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Nhập tiêu đề công việc"
-                value={tieuDe}
-                onChangeText={setTieuDe}
-            />
+            <Text style={styles.label}>Tiêu đề</Text>
+            <TextInput style={styles.input} value={tieuDe} onChangeText={setTieuDe} />
 
-            <Text style={styles.label}>Ngành nghề (*)</Text>
+            <Text style={styles.label}>Ngành nghề</Text>
             <View style={styles.pickerWrapper}>
-                <Picker
-                    selectedValue={nganhNghe}
-                    onValueChange={(value) => setNganhNghe(value)}
-                >
+                <Picker selectedValue={nganhNghe} onValueChange={setNganhNghe}>
                     <Picker.Item label="Chọn ngành nghề" value="" />
                     {nganhNgheList.map((item) => (
                         <Picker.Item key={item.id} label={item.ten} value={item.id} />
@@ -106,45 +95,36 @@ export default function DangTin() {
                 </Picker>
             </View>
 
-            <Text style={styles.label}>Địa điểm (*)</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Nhập địa điểm"
-                value={diaDiem}
-                onChangeText={setDiaDiem}
-            />
+            <Text style={styles.label}>Địa điểm</Text>
+            <TextInput style={styles.input} value={diaDiem} onChangeText={setDiaDiem} />
 
-            <Text style={styles.label}>Mức lương (*)</Text>
+            <Text style={styles.label}>Mức lương</Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
                 <TextInput
                     style={[styles.input, { flex: 1 }]}
-                    placeholder="Từ"
                     keyboardType="numeric"
                     value={mucLuongTu}
                     onChangeText={setMucLuongTu}
                 />
                 <TextInput
                     style={[styles.input, { flex: 1 }]}
-                    placeholder="Đến"
                     keyboardType="numeric"
                     value={mucLuongDen}
                     onChangeText={setMucLuongDen}
                 />
                 <TextInput
                     style={[styles.input, { flex: 1 }]}
-                    placeholder="VNĐ"
                     value={donViLuong}
                     onChangeText={setDonViLuong}
                 />
             </View>
 
-            <Text style={styles.label}>Số lượng tuyển (*)</Text>
+            <Text style={styles.label}>Số lượng tuyển</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Nhập số lượng cần tuyển"
                 keyboardType="numeric"
-                value={soLuongTuyen}
-                onChangeText={setSoLuongTuyen}
+                value={soLuong}
+                onChangeText={setSoLuong}
             />
 
             <Text style={styles.label}>Mô tả công việc</Text>
@@ -155,7 +135,7 @@ export default function DangTin() {
                 onChangeText={setMoTaCongViec}
             />
 
-            <Text style={styles.label}>Yêu cầu ứng viên</Text>
+            <Text style={styles.label}>Yêu cầu</Text>
             <TextInput
                 style={[styles.input, { height: 80 }]}
                 multiline
@@ -163,7 +143,7 @@ export default function DangTin() {
                 onChangeText={setYeuCau}
             />
 
-            <Text style={styles.label}>Chế độ đãi ngộ</Text>
+            <Text style={styles.label}>Đãi ngộ</Text>
             <TextInput
                 style={[styles.input, { height: 60 }]}
                 multiline
@@ -171,24 +151,24 @@ export default function DangTin() {
                 onChangeText={setDaiNgo}
             />
 
-            <Text style={styles.label}>Hạn nộp hồ sơ (*)</Text>
+            <Text style={styles.label}>Hạn nộp hồ sơ</Text>
             <Button title={hanNopHoSo.toDateString()} onPress={() => setShowDatePicker(true)} />
+
             {showDatePicker && (
                 <DateTimePicker
                     value={hanNopHoSo}
                     mode="date"
-                    display="default"
-                    onChange={(event, selectedDate) => {
+                    onChange={(e, d) => {
                         setShowDatePicker(false);
-                        if (selectedDate) setHanNopHoSo(selectedDate);
+                        if (d) setHanNopHoSo(d);
                     }}
                 />
             )}
 
             {loading ? (
-                <ActivityIndicator size="large" color="blue" style={{ marginTop: 20 }} />
+                <ActivityIndicator size="large" style={{ marginTop: 20 }} />
             ) : (
-                <Button title="Đăng tin tuyển dụng" onPress={handleSubmit} />
+                <Button title="Lưu thay đổi" onPress={handleUpdate} />
             )}
         </ScrollView>
     );

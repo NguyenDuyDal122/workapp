@@ -4,20 +4,24 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 from ckeditor.fields import RichTextField
-# Create your models here.
+
 class User(AbstractUser):
-    VAI_TRO_CHOICES = [
-        ('admin', 'Quản trị viên'),
-        ('nha_tuyen_dung', 'Nhà tuyển dụng'),
-        ('ung_vien', 'Ứng viên'),
-    ]
-    vai_tro = models.CharField(max_length=20, choices=VAI_TRO_CHOICES, default='ung_vien')
-    so_dien_thoai = models.CharField(max_length=20, blank=True, null=True)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-    dia_chi = RichTextField(blank=True, null=True)
-    class Meta:
-        verbose_name = "Người dùng"
-        verbose_name_plural = "Người dùng"
+        VAI_TRO_CHOICES = [
+            ('admin', 'Quản trị viên'),
+            ('nha_tuyen_dung', 'Nhà tuyển dụng'),
+            ('ung_vien', 'Ứng viên'),
+        ]
+        vai_tro = models.CharField(max_length=20, choices=VAI_TRO_CHOICES, default='ung_vien')
+        so_dien_thoai = models.CharField(max_length=20, blank=True, null=True)
+        avatar = models.ImageField(
+        upload_to='avatars/%Y/%m',
+        blank=True,
+        null=True
+        )
+        dia_chi = RichTextField(blank=True, null=True)
+        class Meta:
+            verbose_name = "Người dùng"
+            verbose_name_plural = "Người dùng"
 
 
 class BaseModel(models.Model):
@@ -26,9 +30,8 @@ class BaseModel(models.Model):
     active = models.BooleanField(default=True)
 
     class Meta:
-        abstract = True #Xem BaseModels là lớp trừu tượng chung, không tạo DB
+        abstract = True
 
-#Hồ sơ ứng viên
 class UngVien(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='ung_vien')
     ho_ten = models.CharField(null=False, max_length=200)
@@ -38,12 +41,15 @@ class UngVien(BaseModel):
     kinh_nghiem = models.CharField(null=False, max_length=100, verbose_name="Kinh nghiem")
     ky_nang = RichTextField(null=True, blank=True)
     mo_ta_ban_than = models.TextField(blank=True, null=True)
-    cv_file = models.FileField(upload_to='ungvien/%Y/%m', null=True, blank=True, verbose_name="File CV")
-
+    cv_file = models.ImageField(
+    upload_to='ungvien/%Y/%m',
+    blank=True,
+    null=True
+    )
     class Meta:
         verbose_name = "Ứng viên"
         verbose_name_plural = "Ứng viên"
-#Nhà tuyển dụng
+
 class NhaTuyenDung(BaseModel):
     TRANG_THAI_CHOICES = [
         ('cho_duyet', 'Chờ duyệt'),
@@ -51,7 +57,7 @@ class NhaTuyenDung(BaseModel):
         ('tu_choi', 'Từ chối'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='nha_tuyen_dung')
     ten_cong_ty = models.CharField(max_length=255, verbose_name="Tên công ty")
     logo = models.ImageField(upload_to='nhatuyendung/%Y/%m')
     ma_so_thue = models.CharField(max_length=50, unique=True, verbose_name="Mã số thuế")
@@ -67,7 +73,7 @@ class NhaTuyenDung(BaseModel):
 
     def __str__(self):
         return self.ten_cong_ty
-#Danh mục
+
 class NganhNghe(BaseModel):
     ten = models.CharField(max_length=255, unique=True)
     mo_ta = RichTextField(blank=True)
@@ -80,7 +86,7 @@ class NganhNghe(BaseModel):
     def __str__(self):
         return self.ten
 
-#Tin tuyển dụng
+
 class TinTuyenDung(BaseModel): #ck
 
     TRANG_THAI_CHOICES = [
@@ -91,14 +97,14 @@ class TinTuyenDung(BaseModel): #ck
     nha_tuyen_dung = models.ForeignKey(NhaTuyenDung, on_delete=models.CASCADE, related_name='tin_tuyen_dung')
     nganh_nghe = models.ForeignKey(NganhNghe, on_delete=models.SET_NULL, null=True, related_name='tin_tuyen_dung')
     tieu_de = models.CharField( max_length=300, verbose_name="Vị trí") #Tên vị trí
-    mo_ta_cong_viec = RichTextField(verbose_name="Mô tả công việc") #mô tả công việc
-    yeu_cau  = RichTextField(verbose_name="Yêu cầu ứng viên") #Yêu câầu ứng viên
+    mo_ta_cong_viec = RichTextField(verbose_name="Mô tả công việc", blank=True)
+    yeu_cau = RichTextField(verbose_name="Yêu cầu ứng viên", blank=True)
 
     muc_luong_tu  = models.DecimalField(max_digits=15, decimal_places=0, null=False, blank=False)
     muc_luong_den  = models.DecimalField(max_digits=15, decimal_places=0, null=False, blank=False)
     don_vi_luong =models.CharField(max_length=50, default='VNĐ')
 
-    dai_ngo = RichTextField(verbose_name="Chế độ đãi ngộ") #Chế độ đãi ngộ
+    dai_ngo = RichTextField(verbose_name="Chế độ đãi ngộ", blank=True)
     dia_diem = models.CharField(max_length=300, verbose_name="Địa điểm làm việc")
     so_luong_tuyen = models.IntegerField(default=1, validators=[MinValueValidator(1)])
 
@@ -106,7 +112,6 @@ class TinTuyenDung(BaseModel): #ck
     han_nop_ho_so = models.DateField(verbose_name="Hạn nộp hồ sơ")
     trang_thai = models.CharField(max_length=20, choices=TRANG_THAI_CHOICES, default='dang_tuyen')
 
-    #Mở rộng gói tin nổi bật
     tin_noi_bat = models.BooleanField(default=False)
     ngay_het_han_noi_bat = models.DateTimeField(null=True, blank=True)
     luot_xem = models.IntegerField(default=0)
@@ -124,7 +129,6 @@ class TinTuyenDung(BaseModel): #ck
             self.trang_thai = 'het_han'
             self.save()
 
-#Hồ sơ ứng tuyển
 class HoSoUngTuyen(BaseModel):
     TRANG_THAI_CHOICES = [
         ('moi_nop', 'Mới nộp'),
@@ -152,7 +156,6 @@ class HoSoUngTuyen(BaseModel):
     def __str__(self):
         return f"{self.ung_vien.ho_ten} - {self.tin_tuyen_dung.tieu_de}"
 
-#Lưu và so sánh công việc
 class SoSanhCongViec(BaseModel):
     ung_vien = models.ForeignKey(UngVien, on_delete=models.CASCADE, related_name='so_sanh')
     tin_tuyen_dung = models.ManyToManyField(TinTuyenDung, related_name='duoc_so_sanh')
@@ -163,7 +166,6 @@ class SoSanhCongViec(BaseModel):
         verbose_name = "So sánh công việc"
         verbose_name_plural = "So sánh công việc"
 
-   #Mở rộng
 class GoiDichVu(BaseModel):
     LOAI_GOI_CHOICES = [
         ('noi_bat_tin', 'Tin tuyển dụng nổi bật'),
@@ -185,7 +187,6 @@ class GoiDichVu(BaseModel):
         return self.ten_goi
 
 
-# Model Giao dịch thanh toán (mở rộng)
 class GiaoDich(models.Model):
     PHUONG_THUC_CHOICES = [
         ('tien_mat', 'Tiền mặt'),

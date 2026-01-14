@@ -25,7 +25,7 @@ export default function RegisterUngVien({ navigation }) {
     const [ngaySinh, setNgaySinh] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    const [gioiTinh, setGioiTinh] = useState("nam"); // nam | nu
+    const [gioiTinh, setGioiTinh] = useState("nam");
     const [trinhDo, setTrinhDo] = useState("");
     const [kinhNghiem, setKinhNghiem] = useState("");
 
@@ -36,7 +36,6 @@ export default function RegisterUngVien({ navigation }) {
         ImagePicker.requestMediaLibraryPermissionsAsync();
     }, []);
 
-    // Chọn avatar
     const pickAvatar = async () => {
         const res = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -45,7 +44,6 @@ export default function RegisterUngVien({ navigation }) {
         if (!res.canceled) setAvatar(res.assets[0]);
     };
 
-    // Chọn CV (ảnh giống avatar)
     const pickCV = async () => {
         const res = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -54,7 +52,6 @@ export default function RegisterUngVien({ navigation }) {
         if (!res.canceled) setCv(res.assets[0]);
     };
 
-    // Date picker
     const handleDateChange = (event, selectedDate) => {
         setShowDatePicker(false);
         if (selectedDate) setNgaySinh(selectedDate);
@@ -67,7 +64,6 @@ export default function RegisterUngVien({ navigation }) {
         }
 
         try {
-            // 1️⃣ Tạo user
             const userForm = new FormData();
             userForm.append("username", username);
             userForm.append("password", password);
@@ -86,7 +82,6 @@ export default function RegisterUngVien({ navigation }) {
                 headers: { "Content-Type": "multipart/form-data" }
             });
 
-            // 2️⃣ Login lấy token
             const tokenRes = await axios.post(
                 `${BASE_URL}/o/token/`,
                 new URLSearchParams({
@@ -101,7 +96,6 @@ export default function RegisterUngVien({ navigation }) {
 
             const token = tokenRes.data.access_token;
 
-            // 3️⃣ Tạo hồ sơ ứng viên
             const uvForm = new FormData();
             uvForm.append("ho_ten", hoTen);
             uvForm.append("ngay_sinh", ngaySinh.toISOString().split("T")[0]); // YYYY-MM-DD

@@ -13,6 +13,8 @@ r.register('hoso', views.HoSoUngTuyenView, basename='ho_so')
 r.register('sosanh', views.SoSanhCongViecView, basename='so_sanh')
 r.register('goidichvu', views.GoiDichVuView, basename='goi_dich_vu')
 r.register('giaodich', views.GiaoDichView, basename='giao_dich')
+r.register('register', views.RegisterView, basename='register')
+
 
 urlpatterns = [
     path('', include(r.urls)),

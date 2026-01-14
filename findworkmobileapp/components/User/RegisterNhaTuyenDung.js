@@ -34,7 +34,6 @@ export default function RegisterNhaTuyenDung({ navigation }) {
 
     const register = async () => {
         try {
-            /** 1️⃣ user */
             const userForm = new FormData();
             userForm.append("username", username);
             userForm.append("password", password);
@@ -53,7 +52,6 @@ export default function RegisterNhaTuyenDung({ navigation }) {
                 headers: { "Content-Type": "multipart/form-data" }
             });
 
-            /** 2️⃣ token */
             const tokenRes = await axios.post(
                 `${BASE_URL}/o/token/`,
                 new URLSearchParams({
@@ -68,7 +66,6 @@ export default function RegisterNhaTuyenDung({ navigation }) {
 
             const token = tokenRes.data.access_token;
 
-            /** 3️⃣ nhà tuyển dụng */
             const ntForm = new FormData();
             ntForm.append("ten_cong_ty", tenCongTy);
             ntForm.append("ma_so_thue", maSoThue);

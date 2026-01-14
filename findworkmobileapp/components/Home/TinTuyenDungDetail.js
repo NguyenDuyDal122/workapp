@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, Text, Image, ActivityIndicator, ScrollView, StyleSheet } from "react-native";
-import API from "../../configs/API";
+import API, { endpoints } from "../../configs/API";
 
 export default function TinTuyenDungDetail({ route }) {
     const { id } = route.params;
@@ -10,7 +10,7 @@ export default function TinTuyenDungDetail({ route }) {
     useEffect(() => {
         const fetchDetail = async () => {
             try {
-                const res = await API.get(`/tintuyendung/${id}/`);
+                const res = await API.get(endpoints.tintuyendungDetail(id));
                 setTin(res.data);
             } catch (err) {
                 console.log(err);
