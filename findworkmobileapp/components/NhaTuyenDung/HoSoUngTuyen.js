@@ -9,10 +9,12 @@ import {
     Alert
 } from "react-native";
 import API, { endpoints } from "../../configs/API";
-
+import { useNavigation } from "@react-navigation/native";
 export default function HoSoUngTuyen() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [rating, setRating] = useState({}); // ⭐ lưu đánh giá theo hồ sơ
+    const navigation = useNavigation();
 
     const loadHoSo = async () => {
         try {
@@ -20,7 +22,6 @@ export default function HoSoUngTuyen() {
             const res = await API.get(endpoints.hoSoUngTuyen);
             setData(res.data.results || res.data);
         } catch (err) {
-            console.log(err.response?.data || err.message);
             Alert.alert("Lỗi", "Không tải được hồ sơ");
         } finally {
             setLoading(false);
@@ -31,18 +32,44 @@ export default function HoSoUngTuyen() {
         loadHoSo();
     }, []);
 
-    const doiTrangThai = async (id, trangThai) => {
+    const capNhatHoSo = async (id, trangThai) => {
         try {
             await API.patch(endpoints.danhGiaHoSo(id), {
-                trang_thai: trangThai
+                trang_thai: trangThai,
+                danh_gia: rating[id] || null
             });
 
-            Alert.alert("Thành công", "Đã cập nhật trạng thái");
+            Alert.alert("Thành công", "Đã cập nhật hồ sơ");
             loadHoSo();
         } catch (err) {
-            console.log(err.response?.data || err.message);
-            Alert.alert("Lỗi", "Không cập nhật được trạng thái");
+            Alert.alert("Lỗi", "Không cập nhật được hồ sơ");
         }
+    };
+
+    const renderStars = (id) => {
+        const current = rating[id] || 0;
+
+        return (
+            <View style={styles.starRow}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <TouchableOpacity
+                        key={star}
+                        onPress={() =>
+                            setRating({ ...rating, [id]: star })
+                        }
+                    >
+                        <Text
+                            style={[
+                                styles.star,
+                                star <= current && styles.starActive
+                            ]}
+                        >
+                            ★
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+        );
     };
 
     const renderItem = ({ item }) => (
@@ -55,53 +82,44 @@ export default function HoSoUngTuyen() {
                 {item.tin_tuyen_dung?.nha_tuyen_dung?.ten_cong_ty}
             </Text>
 
-            <View style={styles.row}>
-                <Text style={styles.label}>Ứng viên:</Text>
-                <Text>{item.ung_vien?.ho_ten}</Text>
-            </View>
+            <Text>👤 {item.ung_vien?.ho_ten}</Text>
+            <Text>
+                📅 {new Date(item.ngay_nop).toLocaleDateString()}
+            </Text>
 
-            <View style={styles.row}>
-                <Text style={styles.label}>Ngày nộp:</Text>
-                <Text>
-                    {new Date(item.ngay_nop).toLocaleDateString()}
-                </Text>
-            </View>
+            <Text style={styles.status}>
+                Trạng thái: {item.trang_thai}
+            </Text>
 
-            <View style={styles.row}>
-                <Text style={styles.label}>Trạng thái:</Text>
-                <Text style={styles.status}>
-                    {item.trang_thai}
-                </Text>
-            </View>
+            {/* ⭐ ĐÁNH GIÁ */}
+            <Text style={styles.ratingLabel}>Đánh giá hồ sơ:</Text>
+            {renderStars(item.id)}
 
-            {/* ACTIONS */}
+            <TouchableOpacity
+                style={[styles.actionBtn, { backgroundColor: "#2980b9", width: "100%" }]}
+                onPress={() =>
+                    navigation.navigate("ChiTietUngVien", {
+                        ungVien: item.ung_vien,
+                    })
+                }
+            >
+                <Text style={styles.btnText}>Xem hồ sơ ứng viên</Text>
+            </TouchableOpacity>
+
+            {/* ACTION */}
             <View style={styles.actionRow}>
                 <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: "#3498db" }]}
-                    onPress={() => doiTrangThai(item.id, "da_xem")}
+                    style={[styles.actionBtn, { backgroundColor: "#27ae60" }]}
+                    onPress={() => capNhatHoSo(item.id, "phu_hop")}
                 >
-                    <Text style={styles.btnText}>Đã xem</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: "#f39c12" }]}
-                    onPress={() => doiTrangThai(item.id, "phong_van")}
-                >
-                    <Text style={styles.btnText}>Mời PV</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.actionBtn, { backgroundColor: "#2ecc71" }]}
-                    onPress={() => doiTrangThai(item.id, "trung_tuyen")}
-                >
-                    <Text style={styles.btnText}>Trúng tuyển</Text>
+                    <Text style={styles.btnText}>Phù hợp</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     style={[styles.actionBtn, { backgroundColor: "#e74c3c" }]}
-                    onPress={() => doiTrangThai(item.id, "tu_choi")}
+                    onPress={() => capNhatHoSo(item.id, "khong_phu_hop")}
                 >
-                    <Text style={styles.btnText}>Từ chối</Text>
+                    <Text style={styles.btnText}>Không phù hợp</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -110,15 +128,7 @@ export default function HoSoUngTuyen() {
     if (loading) {
         return (
             <View style={styles.center}>
-                <ActivityIndicator size="large" color="#3498db" />
-            </View>
-        );
-    }
-
-    if (data.length === 0) {
-        return (
-            <View style={styles.center}>
-                <Text>Chưa có hồ sơ ứng tuyển</Text>
+                <ActivityIndicator size="large" />
             </View>
         );
     }
@@ -128,15 +138,12 @@ export default function HoSoUngTuyen() {
             data={data}
             keyExtractor={(item) => item.id.toString()}
             renderItem={renderItem}
-            contentContainerStyle={styles.container}
+            contentContainerStyle={{ padding: 15 }}
         />
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 15
-    },
     center: {
         flex: 1,
         justifyContent: "center",
@@ -144,8 +151,8 @@ const styles = StyleSheet.create({
     },
     card: {
         backgroundColor: "#fff",
-        borderRadius: 10,
         padding: 15,
+        borderRadius: 10,
         marginBottom: 15,
         elevation: 3
     },
@@ -155,31 +162,38 @@ const styles = StyleSheet.create({
     },
     company: {
         color: "#3498db",
-        marginBottom: 8
-    },
-    row: {
-        flexDirection: "row",
-        marginTop: 5
-    },
-    label: {
-        fontWeight: "bold",
-        marginRight: 5
+        marginBottom: 5
     },
     status: {
-        color: "#e67e22",
+        marginTop: 5,
+        fontWeight: "bold",
+        color: "#e67e22"
+    },
+    ratingLabel: {
+        marginTop: 10,
         fontWeight: "bold"
+    },
+    starRow: {
+        flexDirection: "row",
+        marginVertical: 5
+    },
+    star: {
+        fontSize: 26,
+        color: "#ccc",
+        marginRight: 4
+    },
+    starActive: {
+        color: "#f1c40f"
     },
     actionRow: {
         flexDirection: "row",
-        flexWrap: "wrap",
         justifyContent: "space-between",
-        marginTop: 12
+        marginTop: 10
     },
     actionBtn: {
         width: "48%",
-        padding: 8,
+        padding: 10,
         borderRadius: 6,
-        marginTop: 6,
         alignItems: "center"
     },
     btnText: {

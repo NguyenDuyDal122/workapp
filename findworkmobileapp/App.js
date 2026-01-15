@@ -17,6 +17,8 @@ import ThongKeHoSo from "./components/NhaTuyenDung/ThongKeHoSo";
 import HoSoCaNhan from "./components/UngVien/HoSoCaNhan";
 import LichSuUngTuyen from "./components/UngVien/LichSuUngTuyen";
 import SoSanhCongViec from "./components/UngVien/SoSanhCongViec";
+import ChiTietUngVien from "./components/NhaTuyenDung/ChiTietUngVien";
+import DangKyDichVu from "./components/NhaTuyenDung/DangKyDichVu";
 
 const Stack = createStackNavigator();
 
@@ -40,6 +42,8 @@ export default function App() {
         <Stack.Screen name="HoSoCaNhan" component={HoSoCaNhan} />
         <Stack.Screen name="LichSuUngTuyen" component={LichSuUngTuyen} />
         <Stack.Screen name="SoSanhCongViec" component={SoSanhCongViec} />
+        <Stack.Screen name="ChiTietUngVien" component={ChiTietUngVien} />
+        <Stack.Screen name="DangKyDichVu" component={DangKyDichVu} />
       </Stack.Navigator>
     </NavigationContainer>
   );

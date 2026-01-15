@@ -45,6 +45,12 @@ export default function Home() {
         loadUser();
     }, []);
 
+    const TRANG_THAI_TIN = {
+        dang_tuyen: { text: "Đang tuyển", color: "#27ae60" },
+        het_han: { text: "Hết hạn", color: "#e67e22" },
+        dong: { text: "Đã đóng", color: "#e74c3c" },
+    };
+
     const fetchTinTuyenDung = async (q = "") => {
         setLoadingTin(true);
         try {
@@ -96,6 +102,9 @@ export default function Home() {
                 break;
             case "my_jobs":
                 navigation.navigate("HoSoUngTuyen");
+                break;
+            case "dich_vu":
+                navigation.navigate("DangKyDichVu");
                 break;
             case "statistics":
                 navigation.navigate("ThongKeHoSo");
@@ -168,6 +177,16 @@ export default function Home() {
                             <Text>Ngành nghề: {item.nganh_nghe?.ten || "Chưa có"}</Text>
                             <Text>Số lượng tuyển: {item.so_luong_tuyen}</Text>
 
+                            <Text
+                                style={{
+                                    color: TRANG_THAI_TIN[item.trang_thai]?.color,
+                                    fontWeight: "bold",
+                                    marginTop: 2,
+                                }}
+                            >
+                                {TRANG_THAI_TIN[item.trang_thai]?.text}
+                            </Text>
+
                             <Button
                                 title="Xem chi tiết"
                                 onPress={() => navigation.navigate("TinTuyenDungDetail", { id: item.id })}
@@ -199,6 +218,7 @@ export default function Home() {
                                 <Button title="Quản lý thông tin doanh nghiệp" onPress={() => handleMenuItem("manage_company")} />
                                 <Button title="Hồ sơ ứng viên" onPress={() => handleMenuItem("my_jobs")} />
                                 <Button title="Đăng tin tuyển dụng" onPress={() => handleMenuItem("post_job")} />
+                                <Button title="Đăng ký gói dịch vụ" onPress={() => handleMenuItem("dich_vu")} />
                                 <Button title="Thống kê" onPress={() => handleMenuItem("statistics")} />
                                 <Button title="Đăng xuất" onPress={logout} color="red" />
                             </>

@@ -15,6 +15,9 @@ export const endpoints = {
     danhGiaHoSo: (id) => `/hoso/${id}/danh_gia/`,
     thongKeHoSo: "/hoso/thong_ke/",
     ungVien: "/ungvien/",
+    goiDichVu: "/goidichvu/",
+    goiDichVuDaMua: "/goidichvu/da_mua/",
+    giaoDich: "/giaodich/",
 };
 
 const API = axios.create({
